@@ -9,6 +9,10 @@ use hyper::{Body, Method, Request, Response, Server, StatusCode};
 extern crate timer;
 extern crate chrono;
 
+
+
+
+
 use std::sync::mpsc::channel;
 //use std::fmt::Display;
 
@@ -29,7 +33,7 @@ async fn echo(req: Request<Body>) -> Result<Response<Body>, hyper::Error>{
        //     println!(" call my body to send {}", req.body());
  
          println!("{:?}", req);
- 
+   
         // await!(req.into_body().compat().try_concat());     
     //         let _bb = req.into_body();
    //  let body = req.into_body().map_err(|_| ()).fold(vec![], |mut acc, chunk| {
@@ -115,8 +119,11 @@ async fn echo(req: Request<Body>) -> Result<Response<Body>, hyper::Error>{
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    pretty_env_logger::init();
-
+    
+     pretty_env_logger::init();
+     
+     // calling 
+  
     // For every connection, we must make a `Service` to handle all
     // incoming HTTP requests on said connection.
     //let make_svc = make_service_fn(|_conn| {
@@ -141,7 +148,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let addr = ([127, 0, 0, 1], 9000).into();
 
     let server = Server::bind(&addr).serve(service);
-
+  //  server.allow_reuse_address = true;
 
     println!("Listening on http://{}", addr);
 
