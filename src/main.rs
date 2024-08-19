@@ -30,10 +30,10 @@ mod support;
 use support::TokioIo;
 
 static mut DF_K : bool = false;
-static INDEX2: &[u8] = b"../my.html";
+static INDEX2: &str = "../my.html";
 static NOTFOUND: &[u8] = b"Not Found";
 
-async fn echo(req: Request<hyper::body::Incoming>) -> Result<Response<BoxBody<Bytes, std::io::Error>>>{
+async fn echo(req: Request<hyper::body::Incoming>) -> Result<Response<BoxBody<Bytes, std::io::Error>>, std::io::Error>{
               println!(" request start ! ");
       match (req.method(), req.uri().path()) {
         // Serve some instructions at /
@@ -184,9 +184,9 @@ fn not_found() -> Response<BoxBody<Bytes, std::io::Error>> {
         .unwrap()
 }
 
-async fn send_my_main_file(filename: &str ) -> Result<Response<BoxBody<Bytes, std::io::Error>>>
+async fn send_my_main_file(filename: &str ) -> Result<Response<BoxBody<Bytes, std::io::Error>>, std::io::Error>
 {
-    let file = File::open(filename).await;
+    let file = File::open(filename);
     if(file.is_err()){
         println!("error open file ");
        return Ok(not_found());
