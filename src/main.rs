@@ -14,6 +14,8 @@ use hyper::body::Frame;
 use hyper::server::conn::http1;
 use hyper::{ Method, Request, Response, StatusCode}; // was Body, Server
 use tokio_util::io::ReaderStream;
+
+use tokio_postgres::{NoTls, Error};
 extern crate timer;
 extern crate chrono;
 
@@ -269,7 +271,21 @@ fn not_found() -> Response<BoxBody<Bytes, hyper::Error>> {
 
     //let servMain = async move {
          let listener = TcpListener::bind(addr).await.unwrap();
-        loop {
+
+    // host vs hostaddr
+    let (client, connection) =
+        tokio_postgres::connect("host=127.0.0.1 user=losdevelop port=5432 password=kaizer1los dbname=losdevelop", NoTls).await?;
+
+
+    tokio::spawn(async move {
+        if let Err(e) = connection.await {
+            eprintln!("connection LOS error: {}", e);
+        }
+    });
+
+
+
+    loop {
             let (stream, _ ) = listener.accept().await.unwrap();
             let io = TokioIo::new(stream);
 
