@@ -15,7 +15,7 @@ use hyper::server::conn::http1;
 use hyper::{ Method, Request, Response, StatusCode}; // was Body, Server
 use tokio_util::io::ReaderStream;
 
-use tokio_postgres::{NoTls, Error};
+use tokio_postgres::{NoTls, Error, Client, GenericClient};
 extern crate timer;
 extern crate chrono;
 
@@ -32,10 +32,13 @@ static mut DF_K : bool = false;
 static INDEX2: &str = "../my.html";
 static NOTFOUND: &[u8] = b"Not Found";
 
-
 // fn get(url: &str) -> http::Result<Response<()>> {
 //     // ...
 // }
+
+
+
+//static  cl : Client = Client::new();
 async fn echo(req: Request<hyper::body::Incoming>) -> Result<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>{
               println!(" request start ! ");
       match (req.method(), req.uri().path()) {
@@ -269,13 +272,25 @@ fn not_found() -> Response<BoxBody<Bytes, hyper::Error>> {
    let addr: SocketAddr = ([127, 0, 0, 8], 8000).into();
 
 
+
     //let servMain = async move {
          let listener = TcpListener::bind(addr).await.unwrap();
 
     // host vs hostaddr
-    let (client, connection) =
+    let (cl, connection) =
         tokio_postgres::connect("host=localhost hostaddr=127.0.0.1 user=losdevelop port=5432 password='kaizer1los2' dbname=losdevelop", NoTls).await?;
 
+
+    let ad = cl;
+
+    let one = 10;
+    let two = 35;
+    let dateTime = "19-08-2024 14:10:13";
+
+
+    // INSERT INTO envidata ( longi, lanti, time_getting ) VALUES ( $1, $2, $3 );
+    ad.query_one("INSERT INTO envidata ( longi, lanti, time_getting ) VALUES ( $1, $2, $3 )", &[&one, &two, &dateTime])
+        .await?;
 
     tokio::spawn(async move {
         if let Err(e) = connection.await {
