@@ -274,7 +274,7 @@ fn not_found() -> Response<BoxBody<Bytes, hyper::Error>> {
 
     // host vs hostaddr
     let (client, connection) =
-        tokio_postgres::connect("host=127.0.0.1 user=losdevelop port=5432 password=kaizer1los dbname=losdevelop", NoTls).await?;
+        tokio_postgres::connect("host=localhost hostaddr=127.0.0.1 user=losdevelop port=5432 password='kaizer1los2' dbname=losdevelop", NoTls).await?;
 
 
     tokio::spawn(async move {
