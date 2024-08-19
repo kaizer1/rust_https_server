@@ -4,15 +4,12 @@
 //#[deny(unused_variables)]
 
 
-//use std::convert::Infallible;
-use bytes::Bytes;
+use hyper::body::Bytes;
 use std::fs::File;
+use std::io::Read;
 use std::net::SocketAddr;
-//use std::ptr::read;
-//use futures_util::future::join;
-// use futures_util::TryStreamExt;
 use hyper::service::{ service_fn }; // make_service_fn
-use http_body_util::{BodyExt, combinators::BoxBody, Full, StreamBody};
+use http_body_util::{combinators::BoxBody, BodyExt, Full, StreamBody};
 use hyper::body::Frame;
 use hyper::server::conn::http1;
 use hyper::{ Method, Request, Response, StatusCode}; // was Body, Server
@@ -33,7 +30,11 @@ static mut DF_K : bool = false;
 static INDEX2: &str = "../my.html";
 static NOTFOUND: &[u8] = b"Not Found";
 
-async fn echo(req: Request<hyper::body::Incoming>) -> Result<Response<BoxBody<Bytes, std::io::Error>>, std::io::Error>{
+
+// fn get(url: &str) -> http::Result<Response<()>> {
+//     // ...
+// }
+async fn echo(req: Request<hyper::body::Incoming>) -> Result<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>{
               println!(" request start ! ");
       match (req.method(), req.uri().path()) {
         // Serve some instructions at /
@@ -85,50 +86,63 @@ async fn echo(req: Request<hyper::body::Incoming>) -> Result<Response<BoxBody<By
           //      } ",
           // ))),
 
-          // (&Method::GET, "/1") => {
-          //     println!(" 1 call  ");
-          //
-          //     let mut builder = Response::builder()
-          //         .header("dsf", "sldjf")
-          //         .body(Body::from(""));
-          //
-          //     Ok(builder)
-          // }
+          (&Method::GET, "/1") => {
+              println!(" 1 call  ");
+
+              let mut builder = Response::builder()
+                  .header("dsf", "sldjf")
+                  .body(String::new());
+
+              //Ok(builder)
+           Ok(Response::new(full("Try Postin data to /1")))
+
+              //builder.body()
+          },
+
+          (&Method::GET, "/dfij") => Ok(Response::new(req.into_body().boxed())),
 
         // Simply echo the body back to the client.
 
-      //   (&Method::POST, "/echo") => {
-      //      println!(" calling simple echo ! ");
-      // Ok(Response::new(req.into_body()))
-      //    },
-       
-           // (&Method::POST, "/ehi") => {
-           //
-           //         unsafe {
-           //            if DF_K {
-           //                println!(" ok TRUE my values !");
-           //            } else {
-           //
-           //    println!(" False (default )calliung EHI is besting's ");
-           //              }
-           //
-           //           }
-           //
-           //     // let mut builder = Response::builder()
-           //       //     .header("LOSDFF", "BASDRAN");
-           //            //.status(STATUS::OK);
-           //
-           //              // builder.body()
-           //
-           //      // let mut respom = Response::builder();
-           //      //respom.header("Ff", "ddslkfjwk jjakskw ")
-           //      // .status(StatusCode::OK);
-           //
-           //       // respom.body(())
-           //
-           //    Ok(Response::new(BoxBody::from("sdkfwlkejflksdjflksjdf")))
-           //
-           //  },
+        (&Method::POST, "/echo") => {
+           println!(" calling simple echo ! ");
+      Ok(Response::new(req.into_body().boxed()))
+         },
+
+
+           (&Method::POST, "/ehi") => {
+
+                   unsafe {
+                      if DF_K {
+                          println!(" ok TRUE my values !");
+                      } else {
+
+              println!(" False (default )calliung EHI is besting's ");
+                        }
+
+                     }
+
+               // let mut builder = Response::builder()
+                 //     .header("LOSDFF", "BASDRAN");
+                      //.status(STATUS::OK);
+
+                        // builder.body()
+
+                // let mut respom = Response::builder();
+                //respom.header("Ff", "ddslkfjwk jjakskw ")
+                // .status(StatusCode::OK);
+
+                 // respom.body(())
+
+               // let response1 = get("https:// www. rust-lang. org/").unwrap();
+               // let dfdf = "sldkfjksldjf".bytes();
+
+               //let boyd = response1.body();
+
+               Ok(Response::new(BoxBody::new(Bytes::from("asdfasdfsdf"))))
+
+               //Ok(Response::new(BoxBody::from(dfdf)))
+
+            },
 
 
 
@@ -171,20 +185,30 @@ async fn echo(req: Request<hyper::body::Incoming>) -> Result<Response<BoxBody<By
             Ok(not_found)
         }
     }
+
+
+
 }
 
 //async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 //    Ok(Response::new(Body::from("Hello World!")))
 //}
 
-fn not_found() -> Response<BoxBody<Bytes, std::io::Error>> {
+
+fn full<T: Into<Bytes>>(chunk: T) -> BoxBody<Bytes, hyper::Error> {
+         Full::new(chunk.into())
+        .map_err(|never| match never {})
+        .boxed()
+}
+
+fn not_found() -> Response<BoxBody<Bytes, hyper::Error>> {
     Response::builder()
         .status(StatusCode::NOT_FOUND)
         .body(Full::new(NOTFOUND.into()).map_err(|e| match e {}).boxed())
         .unwrap()
 }
 
-async fn send_my_main_file(filename: &str ) -> Result<Response<BoxBody<Bytes, std::io::Error>>, std::io::Error>
+async fn send_my_main_file(filename: &str ) -> Result<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>
 {
     let file = File::open(filename);
     if(file.is_err()){
@@ -192,10 +216,10 @@ async fn send_my_main_file(filename: &str ) -> Result<Response<BoxBody<Bytes, st
        return Ok(not_found());
     }
 
-    let file : File = file.unwrap();
+  //  let file : File = file?;
     let reader_stream = ReaderStream::new(file);
 
-    let stream_body = StreamBody::new(reader_stream.map_ok(Frame::data));
+    let stream_body = StreamBody::new(reader_stream.map_ok()); //(Frame::data));
 
     let boxed_body = stream_body.boxed();
 
@@ -204,7 +228,7 @@ async fn send_my_main_file(filename: &str ) -> Result<Response<BoxBody<Bytes, st
         .body(boxed_body)
         .unwrap();
 
-    return Ok(response)
+    Ok(response)
 }
 
 #[tokio::main]
@@ -235,7 +259,7 @@ async fn send_my_main_file(filename: &str ) -> Result<Response<BoxBody<Bytes, st
 
    // was [127, 0, 0, 1], 3000)    
    // let addr = ([127, 0, 0, 1], 9000).into();
-   let addr: SocketAddr = ([127, 0, 0, 1], 9000).into();
+   let addr: SocketAddr = ([127, 0, 0, 8], 8000).into();
 
 
     //let servMain = async move {
