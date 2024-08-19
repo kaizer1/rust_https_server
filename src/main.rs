@@ -42,9 +42,11 @@ async fn echo(req: Request<hyper::body::Incoming>) -> Result<Response<BoxBody<By
         //     "Try POSTing data to see yandex maps  to /echo such as: `curl localhost:3000/echo -XPOST -d 'hello world'`",
         // ))),
 
-          (&Method::GET, "/") => send_my_main_file(INDEX2).await,
+          (&Method::GET, "/") => { // send_my_main_file(INDEX2).await,
 
-              // let file = File::open("../my.html");
+              Ok(Response::new(full("main Screen Pages ")))
+          },
+          // let file = File::open("../my.html");
               // if(file.is_err()){
               //     println!("error open file ");
               //    return Ok(Response::new(BoxBody::from("error open FIle ")))
@@ -138,7 +140,10 @@ async fn echo(req: Request<hyper::body::Incoming>) -> Result<Response<BoxBody<By
 
                //let boyd = response1.body();
 
-               Ok(Response::new(BoxBody::new(Bytes::from("asdfasdfsdf"))))
+
+               Ok(Response::new(req.into_body().boxed()))
+
+               //Ok(Response::new(BoxBody::new("")))
 
                //Ok(Response::new(BoxBody::from(dfdf)))
 
@@ -208,28 +213,28 @@ fn not_found() -> Response<BoxBody<Bytes, hyper::Error>> {
         .unwrap()
 }
 
-async fn send_my_main_file(filename: &str ) -> Result<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>
-{
-    let file = File::open(filename);
-    if(file.is_err()){
-        println!("error open file ");
-       return Ok(not_found());
-    }
-
-  //  let file : File = file?;
-    let reader_stream = ReaderStream::new(file);
-
-    let stream_body = StreamBody::new(reader_stream.map_ok()); //(Frame::data));
-
-    let boxed_body = stream_body.boxed();
-
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .body(boxed_body)
-        .unwrap();
-
-    Ok(response)
-}
+// async fn send_my_main_file(filename: &str ) -> Result<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>
+// {
+//     let file = File::open(filename).await;
+//     if(file.is_err()){
+//         println!("error open file ");
+//        return Ok(not_found());
+//     }
+//
+//     let file : File = file.unwrap();
+//     let reader_stream = ReaderStream::new(file);
+//
+//     let stream_body = StreamBody::new(reader_stream.map_ok()); //(Frame::data));
+//
+//     let boxed_body = stream_body.boxed();
+//
+//     let response = Response::builder()
+//         .status(StatusCode::OK)
+//         .body(boxed_body)
+//         .unwrap();
+//
+//     Ok(response)
+// }
 
 #[tokio::main]
 //pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
